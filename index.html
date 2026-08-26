@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard TEC — Cogna/Anhanguera</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f4f4f0;
+  --surface:#fff;
+  --border:#e8e7e0;
+  --border-strong:#d0cfc8;
+  --text:#1a1a18;
+  --text-muted:#888;
+  --text-sub:#aaa;
+  --green:#1a7a50;
+  --green-bg:#edf7f2;
+  --amber:#9a6f00;
+  --amber-bg:#fdf6e3;
+  --red:#b83030;
+  --red-bg:#fdf0f0;
+  --blue:#2060c0;
+  --blue-light:#e8f0fc;
+  --radius:10px;
+  --shadow:0 1px 4px rgba(0,0,0,.07);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#e02020;padding:3px 8px;border-radius:5px}
+.header-title{font-size:15px;font-weight:600;color:var(--text)}
+.header-sub{font-size:11px;color:var(--text-muted)}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.periodo-label{font-size:11px;color:var(--text-muted);margin-right:4px}
+
+/* PERIOD SELECTOR */
+.period-selector{display:flex;gap:6px;flex-wrap:wrap}
+.period-btn{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.period-btn:hover{border-color:#aaa;color:var(--text)}
+.period-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+
+/* CONTAINER */
+.container{max-width:1120px;margin:1.8rem auto;padding:0 1.5rem}
+.section-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;margin-top:2rem}
+.section-title:first-child{margin-top:0}
+
+/* BLOCO 1 — KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:.5rem}
+.kpi{background:var(--surface);border-radius:var(--radius);padding:1.1rem 1.2rem;border:1px solid var(--border);box-shadow:var(--shadow)}
+.kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:600;line-height:1;color:var(--text)}
+.kpi-sub{font-size:11px;color:var(--text-sub);margin-top:5px}
+.kpi-delta{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:5px}
+.kpi-delta.up{background:var(--green-bg);color:var(--green)}
+.kpi-delta.down{background:var(--red-bg);color:var(--red)}
+.kpi-delta.neutral{background:#f0f0ec;color:#888}
+.kpi.green .kpi-value{color:var(--green)}
+.kpi.amber .kpi-value{color:var(--amber)}
+.kpi.red .kpi-value{color:var(--red)}
+
+/* BLOCO 2 — CANAIS */
+.channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.channel-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.channel-header{padding:.7rem 1rem;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.channel-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.channel-name{font-size:12px;font-weight:600;color:var(--text)}
+.channel-tag{font-size:10px;color:var(--text-muted);margin-left:auto;background:var(--bg);padding:2px 7px;border-radius:10px}
+.channel-body{padding:.6rem 1rem}
+.ch-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.ch-row:last-child{border:none}
+.ch-label{font-size:12px;color:var(--text-muted)}
+.ch-val{font-size:13px;font-weight:500;color:var(--text)}
+.ch-val.na{color:var(--text-sub);font-size:11px;font-weight:400}
+.ch-pct{font-size:11px;color:var(--text-sub);margin-left:6px}
+
+/* BLOCO 3 — GRÁFICOS */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.chart-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:1.2rem}
+.chart-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:1rem}
+.chart-wrap{position:relative;height:200px}
+.chart-wrap.tall{height:240px}
+
+/* FOOTER */
+.footer{text-align:center;font-size:11px;color:var(--text-sub);padding:2rem 0 3rem;margin-top:1rem}
+
+/* LOADING / ERROR */
+.loading{text-align:center;padding:5rem;color:var(--text-muted)}
+.error-box{background:#fff0f0;border:1px solid #fcc;border-radius:var(--radius);padding:1rem 1.2rem;color:var(--red);font-size:13px;line-height:1.6;margin-bottom:1.5rem}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:1.8rem 0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-logo">TEC</span>
+    <div>
+      <div class="header-title">Dashboard de Performance</div>
+      <div class="header-sub" id="header-sub">Régua <span id="hdr-regua">—</span> · Cogna/Anhanguera</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="periodo-label">Período:</span>
+    <div class="period-selector" id="period-selector"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="error-container"></div>
+  <div id="content" class="loading">Carregando dados...</div>
+</div>
+
+<script>
+const DATA_URL = 'regua-4929.json';
+
+let allData = null;
+let currentIdx = 0;
+let charts = {};
+
+// ── utilidades ──────────────────────────────────────────────────────────────
+const fmt  = v => (v !== null && v !== undefined) ? v : null;
+const fmtN = v => (v !== null && v !== undefined) ? v.toLocaleString('pt-BR') : '—';
+const fmtP = v => (v !== null && v !== undefined) ? v.toFixed(2).replace('.',',') + '%' : '—';
+const fmtR = v => (v !== null && v !== undefined && v > 0)
+  ? 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2}) : 'R$ 0';
+
+function delta(curr, prev, field) {
+  if (!prev) return null;
+  const c = curr[field], p = prev[field];
+  if (c === null || p === null || p === 0) return null;
+  const d = ((c - p) / p * 100).toFixed(1);
+  return { val: d, cls: d >= 0 ? 'up' : 'down', sign: d >= 0 ? '▲' : '▼' };
+}
+
+function deltaHtml(d) {
+  if (!d) return '';
+  return `<span class="kpi-delta ${d.cls}">${d.sign} ${Math.abs(d.val)}% vs anterior</span>`;
+}
+
+// ── render período ───────────────────────────────────────────────────────────
+function renderPeriodSelector(periodos) {
+  const sel = document.getElementById('period-selector');
+  sel.innerHTML = '';
+  periodos.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'period-btn' + (i === currentIdx ? ' active' : '');
+    btn.textContent = p.label;
+    btn.onclick = () => { currentIdx = i; renderDashboard(); };
+    sel.appendChild(btn);
+  });
+}
+
+// ── render KPIs ──────────────────────────────────────────────────────────────
+function renderKPIs(curr, prev) {
+  const fields = [
+    { key:'leads',      label:'Leads',       cls:'',      sub: p => '' },
+    { key:'enviados',   label:'Enviados',     cls:'',      sub: p => '' },
+    { key:'entregues',  label:'Entregues',    cls:'green', sub: p => `Taxa ${fmtP(p.taxa_entrega)}` },
+    { key:'cliques',    label:'Cliques',      cls:'amber', sub: p => `CTR ${fmtP(p.ctr)}` },
+    { key:'conversoes', label:'Conversões',   cls: curr.conversoes > 0 ? 'green' : 'red', sub: p => '' },
+    { key:'receita',    label:'Receita',      cls: curr.receita > 0 ? 'green' : 'red',
+      sub: p => `TM: ${p.ticket_medio > 0 ? fmtR(p.ticket_medio) : '—'}`,
+      fmtFn: fmtR },
+  ];
+
+  return `<div class="kpi-grid">` + fields.map(f => {
+    const val  = f.fmtFn ? f.fmtFn(curr[f.key]) : fmtN(curr[f.key]);
+    const d    = delta(curr, prev, f.key);
+    const sub  = f.sub(curr);
+    return `
+    <div class="kpi ${f.cls}">
+      <div class="kpi-label">${f.label}</div>
+      <div class="kpi-value">${val}</div>
+      ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
+      ${deltaHtml(d)}
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+// ── render canais ─────────────────────────────────────────────────────────────
+const CANAL_CONFIG = {
+  email:    { label:'Email',    color:'#2a78d6', tag:'canal principal' },
+  whatsapp: { label:'WhatsApp', color:'#1a9e6a', tag:'canal engajamento' },
+  sms:      { label:'SMS',      color:'#d4900a', tag:'canal suporte' },
+};
+
+function canalRow(label, val, pct) {
+  const v = val !== null ? fmtN(val) : null;
+  const p = pct !== null ? fmtP(pct) : null;
+  return `<div class="ch-row">
+    <span class="ch-label">${label}</span>
+    <span>
+      ${v !== null ? `<span class="ch-val">${v}</span>` : `<span class="ch-val na">N/D</span>`}
+      ${p !== null ? `<span class="ch-pct">(${p})</span>` : ''}
+    </span>
+  </div>`;
+}
+
+function renderCanais(curr) {
+  const canais = curr.canais;
+  return `<div class="channel-grid">` + Object.entries(canais).map(([key, c]) => {
+    const cfg = CANAL_CONFIG[key] || { label: key, color:'#888', tag:'' };
+    const isSMS = key === 'sms';
+    const txEntrega = c.enviados > 0 ? c.entregues/c.enviados*100 : null;
+    const txAbertura = c.entregues > 0 && c.aberturas !== null ? c.aberturas/c.entregues*100 : null;
+    const txClique = c.entregues > 0 && c.cliques !== null ? c.cliques/c.entregues*100 : null;
+    const txConv = c.enviados > 0 ? c.conversoes/c.enviados*100 : null;
+
+    return `
+    <div class="channel-card">
+      <div class="channel-header">
+        <div class="channel-dot" style="background:${cfg.color}"></div>
+        <span class="channel-name">${cfg.label}</span>
+        <span class="channel-tag">${cfg.tag}</span>
+      </div>
+      <div class="channel-body">
+        ${canalRow('Enviados',   c.enviados,   null)}
+        ${canalRow('Entregues',  c.entregues,  txEntrega)}
+        ${c.aberturas !== null
+          ? canalRow('Aberturas', c.aberturas, txAbertura)
+          : `<div class="ch-row"><span class="ch-label">Aberturas</span><span class="ch-val na">N/A para ${cfg.label}</span></div>`}
+        ${canalRow('Cliques',    c.cliques,    txClique)}
+        ${canalRow('Conversões', c.conversoes, txConv)}
+        ${!isSMS
+          ? canalRow('CTOR', c.ctor !== null ? c.ctor : null, null)
+          : `<div class="ch-row"><span class="ch-label">CTOR</span><span class="ch-val na">N/D para SMS</span></div>`}
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+// ── render gráficos ───────────────────────────────────────────────────────────
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function renderCharts(curr, prev) {
+  const canaisLabels = Object.keys(curr.canais).map(k => CANAL_CONFIG[k]?.label || k);
+  const colors = Object.keys(curr.canais).map(k => CANAL_CONFIG[k]?.color || '#888');
+
+  // Gráfico 1 — Entrega por canal (barras agrupadas)
+  const envArr  = Object.values(curr.canais).map(c => c.enviados  || 0);
+  const entArr  = Object.values(curr.canais).map(c => c.entregues || 0);
+  charts.entrega = new Chart(document.getElementById('chartEntrega'), {
+    type: 'bar',
+    data: {
+      labels: canaisLabels,
+      datasets: [
+        { label:'Enviados',  data: envArr, backgroundColor: colors.map(c => c+'33'), borderColor: colors, borderWidth:2, borderRadius:4 },
+        { label:'Entregues', data: entArr, backgroundColor: colors, borderRadius:4 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:11} } } },
+      scales:{ y:{ beginAtZero:true, ticks:{font:{size:11}} }, x:{ ticks:{font:{size:11}} } }
+    }
+  });
+
+  // Gráfico 2 — Taxa de conversão por canal (barras horizontais)
+  const convArr = Object.values(curr.canais).map(c =>
+    c.enviados > 0 ? parseFloat((c.conversoes/c.enviados*100).toFixed(2)) : 0
+  );
+  charts.conv = new Chart(document.getElementById('chartConv'), {
+    type: 'bar',
+    data: {
+      labels: canaisLabels,
+      datasets: [{
+        label:'Taxa de Conversão (%)',
+        data: convArr,
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ beginAtZero:true, ticks:{ callback: v => v+'%', font:{size:11} } },
+        y:{ ticks:{ font:{size:11} } }
+      }
+    }
+  });
+
+  // Gráfico 3 — Comparativo período anterior (linha)
+  if (prev) {
+    const metrics = ['leads','enviados','entregues','cliques','conversoes'];
+    const mLabels = ['Leads','Enviados','Entregues','Cliques','Conversões'];
+    charts.comp = new Chart(document.getElementById('chartComp'), {
+      type: 'line',
+      data: {
+        labels: mLabels,
+        datasets: [
+          {
+            label: curr.label,
+            data: metrics.map(m => curr[m] || 0),
+            borderColor:'#2060c0', backgroundColor:'#2060c015',
+            tension:.3, pointRadius:5, pointHoverRadius:7, fill:true
+          },
+          {
+            label: prev.label,
+            data: metrics.map(m => prev[m] || 0),
+            borderColor:'#aaa', backgroundColor:'#aaa10',
+            tension:.3, pointRadius:5, pointHoverRadius:7,
+            borderDash:[5,4]
+          }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:11} } } },
+        scales:{ y:{ beginAtZero:true, ticks:{font:{size:11}} }, x:{ ticks:{font:{size:11}} } }
+      }
+    });
+  }
+}
+
+// ── render principal ──────────────────────────────────────────────────────────
+function renderDashboard() {
+  destroyCharts();
+  const periodos = allData.periodos;
+  const curr = periodos[currentIdx];
+  const prev = periodos[currentIdx + 1] || null;
+
+  renderPeriodSelector(periodos);
+  document.getElementById('hdr-regua').textContent = allData.regua_id;
+
+  const hasPrev = !!prev;
+
+  document.getElementById('content').innerHTML = `
+    <p class="section-title">Bloco 1 — Visão Geral</p>
+    ${renderKPIs(curr, prev)}
+
+    <div class="divider"></div>
+    <p class="section-title">Bloco 2 — Métricas por Canal</p>
+    ${renderCanais(curr)}
+
+    <div class="divider"></div>
+    <p class="section-title">Bloco 3 — Gráficos</p>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Entrega por Canal</div>
+        <div class="chart-wrap"><canvas id="chartEntrega"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Taxa de Conversão por Canal (%)</div>
+        <div class="chart-wrap"><canvas id="chartConv"></canvas></div>
+      </div>
+      ${hasPrev ? `
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Comparativo — ${curr.label} vs ${prev.label}</div>
+        <div class="chart-wrap tall"><canvas id="chartComp"></canvas></div>
+      </div>` : `
+      <div class="chart-card" style="grid-column:1/-1;opacity:.5">
+        <div class="chart-title">Comparativo com período anterior</div>
+        <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px">
+          Adicione um segundo período ao JSON para ativar este gráfico.
+        </div>
+      </div>`}
+    </div>
+
+    <p class="footer">
+      Régua ${allData.regua_id} · ${curr.label} · Cogna/Anhanguera · Insider One
+    </p>
+  `;
+
+  renderCharts(curr, prev);
+}
+
+// ── load ──────────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    allData = await res.json();
+    renderDashboard();
+  } catch(e) {
+    document.getElementById('content').innerHTML = '';
+    document.getElementById('error-container').innerHTML = `
+      <div class="error-box">
+        <strong>Não foi possível carregar os dados.</strong><br>
+        Verifique se <code>regua-4929.json</code> está no mesmo repositório e tente novamente.<br>
+        <small style="color:#aaa">${e.message}</small>
+      </div>`;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

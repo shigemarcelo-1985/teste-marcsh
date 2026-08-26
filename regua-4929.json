@@ -1,0 +1,88 @@
+{
+  "produto": "TEC",
+  "regua_id": "4929",
+  "periodos": [
+    {
+      "label": "14.08 – 25.08.2026",
+      "leads": 37,
+      "enviados": 84,
+      "entregues": 70,
+      "taxa_entrega": 83.33,
+      "cliques": 6,
+      "ctr": 8.57,
+      "conversoes": 0,
+      "receita": 0,
+      "ticket_medio": 0,
+      "canais": {
+        "email": {
+          "enviados": 35,
+          "entregues": 34,
+          "aberturas": 6,
+          "cliques": 0,
+          "conversoes": 0,
+          "receita": 0,
+          "ctor": 0.0
+        },
+        "whatsapp": {
+          "enviados": 35,
+          "entregues": 26,
+          "aberturas": null,
+          "cliques": 6,
+          "conversoes": 0,
+          "receita": 0,
+          "ctor": 23.08
+        },
+        "sms": {
+          "enviados": 10,
+          "entregues": 10,
+          "aberturas": null,
+          "cliques": 0,
+          "conversoes": 0,
+          "receita": 0,
+          "ctor": null
+        }
+      }
+    },
+    {
+      "label": "01.08 – 13.08.2026",
+      "leads": 112,
+      "enviados": 310,
+      "entregues": 285,
+      "taxa_entrega": 91.94,
+      "cliques": 38,
+      "ctr": 13.33,
+      "conversoes": 4,
+      "receita": 3200,
+      "ticket_medio": 800,
+      "canais": {
+        "email": {
+          "enviados": 120,
+          "entregues": 115,
+          "aberturas": 42,
+          "cliques": 18,
+          "conversoes": 2,
+          "receita": 1600,
+          "ctor": 42.86
+        },
+        "whatsapp": {
+          "enviados": 120,
+          "entregues": 105,
+          "aberturas": null,
+          "cliques": 15,
+          "conversoes": 2,
+          "receita": 1600,
+          "ctor": 14.29
+        },
+        "sms": {
+          "enviados": 70,
+          "entregues": 65,
+          "aberturas": null,
+          "cliques": 5,
+          "conversoes": 0,
+          "receita": 0,
+          "ctor": null
+        }
+      }
+    }
+  ]
+}
